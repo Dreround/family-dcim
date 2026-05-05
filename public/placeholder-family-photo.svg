@@ -1,0 +1,11 @@
+<svg width="1200" height="900" viewBox="0 0 1200 900" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="900" fill="#F3ECDE"/>
+  <rect x="80" y="80" width="1040" height="740" rx="32" fill="#EFE4D1"/>
+  <circle cx="355" cy="344" r="84" fill="#31473A" fill-opacity="0.2"/>
+  <circle cx="613" cy="300" r="108" fill="#9B7B58" fill-opacity="0.25"/>
+  <circle cx="850" cy="382" r="88" fill="#31473A" fill-opacity="0.16"/>
+  <path d="M240 620C240 541.576 303.576 478 382 478H818C896.424 478 960 541.576 960 620V672H240V620Z" fill="#D8C3A8"/>
+  <path d="M320 662C320 602.353 368.353 554 428 554H772C831.647 554 880 602.353 880 662V708H320V662Z" fill="#B89874"/>
+  <rect x="300" y="718" width="600" height="32" rx="16" fill="#31473A" fill-opacity="0.18"/>
+  <text x="600" y="770" text-anchor="middle" fill="#725741" font-size="42" font-family="Arial, sans-serif">家庭影像档案占位图</text>
+</svg>

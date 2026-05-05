@@ -1,0 +1,206 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  ADMIN
+  EDITOR
+  VIEWER
+}
+
+enum PhotoStatus {
+  ORGANIZED
+  PENDING_CONFIRMATION
+  PEOPLE_PENDING
+  DATE_PENDING
+  LOCATION_PENDING
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+  UNKNOWN
+}
+
+enum FamilyEventType {
+  SPRING_FESTIVAL
+  BIRTHDAY
+  WEDDING
+  GRADUATION
+  TRAVEL
+  HOUSE_WARMING
+  LONGEVITY_BANQUET
+  OTHER
+}
+
+enum RelationType {
+  PARENT
+  SPOUSE
+  CHILD
+  SIBLING
+  SELF
+}
+
+enum ImportanceLevel {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         UserRole @default(EDITOR)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Photo {
+  id                  String        @id @default(cuid())
+  title               String
+  description         String?
+  story               String?
+  takenAt             DateTime?
+  approximateDateText String?
+  fileKey             String
+  fileUrl             String
+  thumbnailUrl        String
+  status              PhotoStatus   @default(PENDING_CONFIRMATION)
+  locationId          String?
+  eventId             String?
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+  location            Location?     @relation(fields: [locationId], references: [id], onDelete: SetNull)
+  event               FamilyEvent?  @relation(fields: [eventId], references: [id], onDelete: SetNull)
+  people              PhotoPerson[]
+  storyLinks          StoryPhoto[]
+
+  @@index([takenAt])
+  @@index([status])
+  @@index([locationId])
+  @@index([eventId])
+}
+
+model Person {
+  id             String           @id @default(cuid())
+  name           String
+  gender         Gender?
+  birthDate      DateTime?
+  deathDate      DateTime?
+  nickname       String?
+  relationName   String?
+  avatarUrl      String?
+  bio            String?
+  note           String?
+  isSelf         Boolean          @default(false)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  photos         PhotoPerson[]
+  stories        StoryPerson[]
+  relationsFrom  FamilyRelation[] @relation("RelationFrom")
+  relationsTo    FamilyRelation[] @relation("RelationTo")
+
+  @@index([name])
+}
+
+model PhotoPerson {
+  photoId     String
+  personId    String
+  faceX       Float?
+  faceY       Float?
+  faceWidth   Float?
+  faceHeight  Float?
+  note        String?
+  createdAt   DateTime @default(now())
+  photo       Photo    @relation(fields: [photoId], references: [id], onDelete: Cascade)
+  person      Person   @relation(fields: [personId], references: [id], onDelete: Cascade)
+
+  @@id([photoId, personId])
+  @@index([personId])
+}
+
+model Location {
+  id          String         @id @default(cuid())
+  name        String
+  address     String?
+  latitude    Float?
+  longitude   Float?
+  description String?
+  photos      Photo[]
+  events      FamilyEvent[]
+  memoirs     FamilyMemoir[]
+
+  @@index([name])
+}
+
+model FamilyEvent {
+  id          String          @id @default(cuid())
+  title       String
+  type        FamilyEventType @default(OTHER)
+  eventDate   DateTime?
+  description String?
+  locationId  String?
+  location    Location?       @relation(fields: [locationId], references: [id], onDelete: SetNull)
+  photos      Photo[]
+
+  @@index([eventDate])
+  @@index([locationId])
+}
+
+model FamilyRelation {
+  id           String       @id @default(cuid())
+  fromPersonId String
+  toPersonId   String
+  relationType RelationType
+  note         String?
+  fromPerson   Person       @relation("RelationFrom", fields: [fromPersonId], references: [id], onDelete: Cascade)
+  toPerson     Person       @relation("RelationTo", fields: [toPersonId], references: [id], onDelete: Cascade)
+
+  @@index([fromPersonId])
+  @@index([toPersonId])
+  @@unique([fromPersonId, toPersonId, relationType])
+}
+
+model FamilyMemoir {
+  id          String          @id @default(cuid())
+  title       String
+  date        DateTime?
+  content     String
+  importance  ImportanceLevel @default(MEDIUM)
+  locationId  String?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  location    Location?       @relation(fields: [locationId], references: [id], onDelete: SetNull)
+  people      StoryPerson[]
+  photos      StoryPhoto[]
+
+  @@index([date])
+  @@index([locationId])
+}
+
+model StoryPerson {
+  storyId  String
+  personId String
+  story    FamilyMemoir @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  person   Person       @relation(fields: [personId], references: [id], onDelete: Cascade)
+
+  @@id([storyId, personId])
+}
+
+model StoryPhoto {
+  storyId String
+  photoId String
+  story   FamilyMemoir @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  photo   Photo        @relation(fields: [photoId], references: [id], onDelete: Cascade)
+
+  @@id([storyId, photoId])
+}
